@@ -1,7 +1,9 @@
 package com.xxl.job.admin.controller;
 
+import com.xxl.job.admin.core.model.XxlJobGroup;
 import com.xxl.job.admin.core.model.XxlJobInfo;
 import com.xxl.job.admin.core.model.XxlJobLog;
+import com.xxl.job.admin.dao.XxlJobGroupDao;
 import com.xxl.job.admin.service.ApiService;
 import com.xxl.job.admin.service.XxlJobPageDataDTO;
 import com.xxl.job.admin.service.XxlJobService;
@@ -20,11 +22,11 @@ import java.util.List;
 public class ApiController {
 
     @Resource
+    public XxlJobGroupDao xxlJobGroupDao;
+    @Resource
     private ApiService apiService;
-
     @Resource
     private XxlJobService xxlJobService;
-
     @Resource
     private JobInfoController jobInfoController;
 
@@ -77,6 +79,22 @@ public class ApiController {
         return apiService.findJobLogs(start, length, jobGroup, jobId,
                 DateUtil.parseDateTime(triggerTimeStart), DateUtil.parseDateTime(triggerTimeEnd),
                 logStatus);
+    }
+
+    @RequestMapping("/job-group/page")
+    @ResponseBody
+    public ReturnT<XxlJobPageDataDTO<List<XxlJobGroup>>> findJobGroups(@RequestParam(required = false, defaultValue = "0") int start,
+                                                                       @RequestParam(required = false, defaultValue = "10") int length,
+                                                                       String appname, String title) {
+        // page query
+        List<XxlJobGroup> list = xxlJobGroupDao.pageList(start, length, appname, title);
+        int total = xxlJobGroupDao.pageListCount(start, length, appname, title);
+
+        // Package
+        XxlJobPageDataDTO<List<XxlJobGroup>> dto = new XxlJobPageDataDTO<>();
+        dto.setTotal(total);
+        dto.setData(list);
+        return new ReturnT<>(dto);
     }
 
 }
